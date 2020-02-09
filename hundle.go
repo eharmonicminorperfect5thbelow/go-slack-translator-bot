@@ -55,6 +55,16 @@ func hundle(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if body.Type == "event_callback" {
+			if body.Event.Type != "reaction_added" {
+				return
+			}
+
+			if body.Event.Reaction != "jp" && body.Event.Reaction != "us" {
+				return
+			}
+
+			findMessage(body.Event.Item.Channel, body.Event.Item.Ts)
+
 			fmt.Println(body)
 		}
 	}
