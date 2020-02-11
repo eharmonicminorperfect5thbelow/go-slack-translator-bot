@@ -3,5 +3,5 @@ Translator Slack bot in Golang
 
 ```
 go get github.com/eharmonicminorperfect5thbelow/go-slack-translator-bot/bot
-go run main.go
+go run example.go
 ```
