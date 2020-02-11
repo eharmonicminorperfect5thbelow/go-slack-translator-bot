@@ -1,8 +1,7 @@
-package main
+package bot
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -23,11 +22,47 @@ type Message struct {
 	Text    string
 }
 
-func postMessage(text string) {
-	return
+type Result struct {
+	Ok bool
 }
 
-func findMessage(channel string, ts string) {
+func postMessage(text string, channel string) {
+	req, err := http.NewRequest("GET", "https://slack.com/api/chat.postMessage", nil)
+
+	params := req.URL.Query()
+	params.Add("token", config.SlackAccessToken)
+	params.Add("text", text)
+	params.Add("channel", channel)
+	req.URL.RawQuery = params.Encode()
+
+	timeout := time.Duration(10 * time.Second)
+	client := &http.Client{
+		Timeout: timeout,
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer res.Body.Close()
+
+	bytes, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var result Result
+	if err := json.Unmarshal(bytes, &result); err != nil {
+		log.Fatal(err)
+	}
+
+	if !result.Ok {
+		log.Fatal("failed to post message")
+	}
+}
+
+func findMessage(channel string, ts string) string {
 	req, err := http.NewRequest("GET", "https://slack.com/api/conversations.history", nil)
 
 	params := req.URL.Query()
@@ -37,7 +72,7 @@ func findMessage(channel string, ts string) {
 	params.Add("oldest", strings.Split(ts, ".")[0])
 	req.URL.RawQuery = params.Encode()
 
-	timeout := time.Duration(5 * time.Second)
+	timeout := time.Duration(10 * time.Second)
 	client := &http.Client{
 		Timeout: timeout,
 	}
@@ -60,22 +95,16 @@ func findMessage(channel string, ts string) {
 	}
 
 	if !messages.Ok {
-		return
+		log.Fatal("failed to find message")
 	}
 
 	if len(messages.Messages) != 1 {
-		return
+		log.Fatal("message not found")
 	}
 
-	fmt.Println(messages.Messages[0].Text)
-
-	return
+	return messages.Messages[0].Text
 }
 
 func findReply() {
-	return
-}
-
-func checkExistence() {
 	return
 }

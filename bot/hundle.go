@@ -1,4 +1,4 @@
-package main
+package bot
 
 import (
 	"encoding/json"
@@ -34,9 +34,10 @@ type Item struct {
 	Ts      string
 }
 
-func Listen(port int) {
-	portString := ":" + strconv.Itoa(port)
+func Run(port int) {
+	loadConfig("config.json")
 
+	portString := ":" + strconv.Itoa(port)
 	http.HandleFunc("/", hundle)
 	http.ListenAndServe(portString, nil)
 }
@@ -63,8 +64,23 @@ func hundle(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			findMessage(body.Event.Item.Channel, body.Event.Item.Ts)
+			message := findMessage(body.Event.Item.Channel, body.Event.Item.Ts)
 
+			fmt.Println(message)
+
+			var translated string
+
+			if body.Event.Reaction == "jp" {
+				translated = translateMessage(message, "en", "ja")
+			}
+
+			if body.Event.Reaction == "us" {
+				translated = translateMessage(message, "ja", "en")
+			}
+
+			postMessage(translated, body.Event.Item.Channel)
+
+			fmt.Println(translated)
 			fmt.Println(body)
 		}
 	}

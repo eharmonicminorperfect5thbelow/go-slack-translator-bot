@@ -1,6 +1,7 @@
 package main
 
+import "github.com/eharmonicminorperfect5thbelow/go-slack-translator-bot/bot"
+
 func main() {
-	loadConfig("config.json")
-	Listen(8080)
+	bot.Run(8080)
 }
